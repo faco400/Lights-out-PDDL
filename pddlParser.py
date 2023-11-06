@@ -55,9 +55,9 @@ def generateIncs(qtde):
 def generateDecs(qtde):
   predicate_x = ''
   predicate_y = ''
-  for i in range(qtde-1):
-    predicate_x += f'(dec x{i} x{i+1}) '
-    predicate_y += f'(dec y{i} y{i+1}) '
+  for i in range(qtde-1, 0, -1):
+    predicate_x += f'(dec x{i} x{i-1}) '
+    predicate_y += f'(dec y{i} y{i-1}) '
   return predicate_x, predicate_y
 # gera objetos do arquivo de problema
 def generateObjects(qtde):
