@@ -1,8 +1,73 @@
+import sys
+
 DOMAIN = 'lightsout.pddl'
 PLANNER = '/tmp/dir/software/planners/downward/fast-downward.py'
 PROBLEM = 'problem.pddl'
 
+# gera goal do problema
+def generateGoal(qtde):
+  on_goal = ''
+  off_goal = ''
+  for i in range(qtde):
+    for j in range(qtde):
+      off_goal += f'(light-off x{i} y{j})\n'
+      on_goal += f'(not (light-on x{i} y{j}))\n'
+  
+  return on_goal, off_goal
 
+# gera predicados light-on e light-off e broken
+def generateLightOnOffBroken(i_parameters):
+  on_predicate = ''
+  off_predicate = ''
+  broken_predicate = ''
+
+  count_lines = 0
+  for line in i_parameters:
+    count_column = 0
+    for character in line[:-1]:
+      if character == 'D' or character == 'd':
+        off_predicate += f'(light-off x{count_lines} y{count_column})\n'
+        if character == 'd':
+          broken_predicate += f'(broken x{count_lines} y{count_column})\n'
+
+      if character == 'L' or character == 'l':
+        on_predicate += f'(light-on x{count_lines} y{count_column})\n'
+        if character == 'l':
+          broken_predicate += f'(broken x{count_lines} y{count_column})\n'
+      
+      print(f'caracter: {character} ')
+      count_column += 1
+    count_lines += 1
+
+  return on_predicate, off_predicate, broken_predicate
+
+
+# gera incrementos para o init do problema
+def generateIncs(qtde):
+  predicate_x = ''
+  predicate_y = ''
+  for i in range(qtde-1):
+    predicate_x += f'(inc x{i} x{i+1}) '
+    predicate_y += f'(inc y{i} y{i+1}) '
+  return predicate_x, predicate_y
+  
+# gera decrementos para o init do problema
+def generateDecs(qtde):
+  predicate_x = ''
+  predicate_y = ''
+  for i in range(qtde-1):
+    predicate_x += f'(dec x{i} x{i+1}) '
+    predicate_y += f'(dec y{i} y{i+1}) '
+  return predicate_x, predicate_y
+# gera objetos do arquivo de problema
+def generateObjects(qtde):
+  objects = ''
+  for i in range(qtde):
+    objects += f'x{i} y{i} '
+  
+  return objects
+
+# Gera arquivo de domínio
 def generateDomain():
   if not DOMAIN:
     print('No path specified for domain')
@@ -75,12 +140,58 @@ def generateDomain():
         """)
   pass
 
+# Gera arquivo de problema
 def generateProblem(i_parameters):
-  print(i_parameters)
+  if not PROBLEM:
+    print('No path specified for problem')
+    return
+  
+  objects_count = len(i_parameters)
+  objects = generateObjects(objects_count)
+  incsX, incsY = generateIncs(objects_count)
+  decsX, decsY = generateDecs(objects_count)
+  on, off, broken = generateLightOnOffBroken(i_parameters)
+  goal_on, goal_off = generateGoal(objects_count)
+
+
+
+  with open(PROBLEM, 'w+') as problem:
+    problem.write(
+  f"""
+  (define (problem p01) (:domain lightsout)
+  (:objects
+  {objects} - cell
+  )
+  (:init
+  {incsX}
+  {incsY}
+  {decsX}
+  {decsY}
+
+  {on}
+
+  {off}
+
+  {broken}
+  )
+
+  (:goal
+  (and
+  {goal_off}
+  {goal_on}
+  )
+  )
+  )
+  """)
   pass
 
+# Leitura da entrada
 def readInput():
-  input_parameters = input()
+  input_parameters = []
+  for line in sys.stdin:
+    input_parameters.append(line)
+   
+  # print(input_parameters)
   return input_parameters
 
 if __name__ == "__main__":
