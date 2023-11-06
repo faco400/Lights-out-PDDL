@@ -1,7 +1,8 @@
 import sys
+import subprocess
 
 DOMAIN = 'lightsout.pddl'
-PLANNER = '/tmp/dir/software/planners/downward/fast-downward.py'
+PLANNER = '/home/software/planners/downward/fast-downward.py'
 PROBLEM = 'problem.pddl'
 
 # gera goal do problema
@@ -194,7 +195,12 @@ def readInput():
   # print(input_parameters)
   return input_parameters
 
+# Chama o planejador e executa com domínio e problema gerados
+def callPlanner():
+  subprocess.call([PLANNER, '--alias', 'lama-first', DOMAIN, PROBLEM])
+
 if __name__ == "__main__":
   i_parameters = readInput()
   generateDomain()
   generateProblem(i_parameters)
+  callPlanner()
