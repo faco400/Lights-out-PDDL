@@ -3,7 +3,8 @@ import subprocess
 
 regex = r"\(switch-on-off\s+(\w+)\s+(\w+)\)"
 DOMAIN = 'lightsout.pddl'
-PLANNER = '/home/software/planners/downward/fast-downward.py'
+# PLANNER = '/home/software/planners/madagascar/M'
+PLANNER = '/tmp/dir/software/planners/downward/fast-downward.py'
 PROBLEM = 'problem.pddl'
 OUTPUT = 'sas_plan'
 
@@ -38,7 +39,6 @@ def generateLightOnOffBroken(i_parameters):
         if character == 'l':
           broken_predicate += f'(broken x{count_lines} y{count_column})\n'
       
-      print(f'caracter: {character} ')
       count_column += 1
     count_lines += 1
 
@@ -199,7 +199,8 @@ def readInput():
 
 # Chama o planejador e executa com domínio e problema gerados
 def callPlanner():
-  subprocess.call([PLANNER, '--alias', 'lama-first', DOMAIN, PROBLEM])
+  subprocess.call([PLANNER, '--alias', 'lama-first', DOMAIN, PROBLEM], stdout=subprocess.DEVNULL) # para fastdownard
+  # subprocess.call([PLANNER, DOMAIN, PROBLEM, '-o', 'sas_plan', '-Q']) # para madagascar
 
 # read plan output
 def readPlan():
@@ -217,6 +218,20 @@ def readPlan():
         y = xy[1].strip('y')
         coordinates += f'({x}, {y});'
   print(coordinates[:-1]+'\n')
+
+  # with open(OUTPUT,'r') as output:
+  #   for line in output:
+  #     if 'cost' in line:
+  #       pass
+  #     else:
+  #       startX = line.rfind('x')
+  #       # startY = line.rfind('y')
+  #       plan = line[startX:-2]
+  #       xy = plan.split(' ')
+  #       x = xy[0].strip('x')
+  #       y = xy[1].strip('y')
+  #       coordinates += f'({x}, {y});'
+  # print(coordinates[:-1]+'\n')
 
 if __name__ == "__main__":
   i_parameters = readInput()
