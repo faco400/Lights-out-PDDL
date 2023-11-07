@@ -216,8 +216,7 @@ def readPlan():
         x = xy[0].strip('x')
         y = xy[1].strip('y')
         coordinates += f'({x}, {y});'
-
-  print(coordinates[:-1])
+  print(coordinates[:-1]+'\n')
 
 if __name__ == "__main__":
   i_parameters = readInput()
