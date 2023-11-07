@@ -1,9 +1,11 @@
 import sys
 import subprocess
 
+regex = r"\(switch-on-off\s+(\w+)\s+(\w+)\)"
 DOMAIN = 'lightsout.pddl'
 PLANNER = '/home/software/planners/downward/fast-downward.py'
 PROBLEM = 'problem.pddl'
+OUTPUT = 'sas_plan'
 
 # gera goal do problema
 def generateGoal(qtde):
@@ -199,8 +201,27 @@ def readInput():
 def callPlanner():
   subprocess.call([PLANNER, '--alias', 'lama-first', DOMAIN, PROBLEM])
 
+# read plan output
+def readPlan():
+  coordinates = ''
+  x = ''
+  y = ''
+  with open(OUTPUT,'r') as output:
+    for line in output:
+      if 'cost' in line:
+        pass
+      else:
+        plan = line[15:-2]
+        xy = plan.split(' ')
+        x = xy[0].strip('x')
+        y = xy[1].strip('y')
+        coordinates += f'({x}, {y});'
+
+  print(coordinates[:-1])
+
 if __name__ == "__main__":
   i_parameters = readInput()
   generateDomain()
   generateProblem(i_parameters)
   callPlanner()
+  readPlan()
