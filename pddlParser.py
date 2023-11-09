@@ -1,10 +1,11 @@
 import sys
 import subprocess
+import os
 
 regex = r"\(switch-on-off\s+(\w+)\s+(\w+)\)"
 DOMAIN = 'lightsout.pddl'
-# PLANNER = '/home/software/planners/madagascar/M'
-PLANNER = '/tmp/dir/software/planners/downward/fast-downward.py'
+# PLANNER = '/tmp/dir/software/planners/madagascar/M' # bom no AGILE
+PLANNER = '/tmp/dir/software/planners/downward/fast-downward.py' 
 PROBLEM = 'problem.pddl'
 OUTPUT = 'sas_plan'
 
@@ -199,15 +200,32 @@ def readInput():
 
 # Chama o planejador e executa com domínio e problema gerados
 def callPlanner():
-  subprocess.call([PLANNER, '--alias', 'lama-first', DOMAIN, PROBLEM], stdout=subprocess.DEVNULL) # para fastdownard
-  # subprocess.call([PLANNER, DOMAIN, PROBLEM, '-o', 'sas_plan', '-Q']) # para madagascar
+  # subprocess.call([PLANNER, '--alias', 'lama-first', DOMAIN, PROBLEM], stdout=subprocess.DEVNULL) # para fastdownard
+  subprocess.call([PLANNER, '--plan-file', OUTPUT, '--search-time-limit', '800' ,'--alias', 'seq-sat-fdss-2', DOMAIN, PROBLEM], stdout=subprocess.DEVNULL) # para fastdownard  com lama 2011 ou stone soup
+  # subprocess.call([PLANNER, '--plan-file', OUTPUT, '--search-time-limit', '900','--alias', 'seq-opt-fdss-2', DOMAIN, PROBLEM], stdout=subprocess.DEVNULL) # Bom para optimal
+  # subprocess.call([PLANNER, DOMAIN, PROBLEM, '-o', OUTPUT, '-Q'], stdout=subprocess.DEVNULL) # para madagascar -> Bom no AGILE
 
 # read plan output
 def readPlan():
   coordinates = ''
   x = ''
   y = ''
-  with open(OUTPUT,'r') as output:
+
+  # read fastdownward plan com lama first e seq-opt-fdss-2
+  # with open(OUTPUT,'r') as output:
+  #   for line in output:
+  #     if 'cost' in line:
+  #       pass
+  #     else:
+  #       plan = line[15:-2]
+  #       xy = plan.split(' ')
+  #       x = xy[0].strip('x')
+  #       y = xy[1].strip('y')
+  #       coordinates += f'({x}, {y});'
+  # print(coordinates[:-1]+'\n')
+
+  # read fastdownward plan com seq-sat-lama-2011 ou stone soup (fdss-2)
+  with open(OUTPUT+'.1','r') as output:
     for line in output:
       if 'cost' in line:
         pass
@@ -219,6 +237,7 @@ def readPlan():
         coordinates += f'({x}, {y});'
   print(coordinates[:-1]+'\n')
 
+  # read madagascar plan
   # with open(OUTPUT,'r') as output:
   #   for line in output:
   #     if 'cost' in line:
