@@ -4,8 +4,10 @@ import os
 
 regex = r"\(switch-on-off\s+(\w+)\s+(\w+)\)"
 DOMAIN = 'lightsout.pddl'
-# PLANNER = '/tmp/dir/software/planners/madagascar/M' # bom no AGILE
-PLANNER = '/tmp/dir/software/planners/downward/fast-downward.py' 
+PLANNER = '/tmp/dir/software/planners/madagascar/M' # bom no AGILE
+# PLANNER = '/tmp/dir/software/planners/downward/fast-downward.py' 
+# PLANNER = '/tmp/dir/software/planners/downward-fdss23/fast-downward.py' 
+# PLANNER = '/tmp/dir/software/planners/scorpion-maidu/fast-downward.py' 
 PROBLEM = 'problem.pddl'
 OUTPUT = 'sas_plan'
 
@@ -80,7 +82,7 @@ def generateDomain():
       domain.write(
         """
         (define (domain lightsout)
-  (:requirements :adl :strips)
+  (:requirements :adl)
   (:types
     cell - object
   )
@@ -201,9 +203,10 @@ def readInput():
 # Chama o planejador e executa com domínio e problema gerados
 def callPlanner():
   # subprocess.call([PLANNER, '--alias', 'lama-first', DOMAIN, PROBLEM], stdout=subprocess.DEVNULL) # para fastdownard
-  subprocess.call([PLANNER, '--plan-file', OUTPUT, '--search-time-limit', '800' ,'--alias', 'seq-sat-fdss-2', DOMAIN, PROBLEM], stdout=subprocess.DEVNULL) # para fastdownard  com lama 2011 ou stone soup
-  # subprocess.call([PLANNER, '--plan-file', OUTPUT, '--search-time-limit', '900','--alias', 'seq-opt-fdss-2', DOMAIN, PROBLEM], stdout=subprocess.DEVNULL) # Bom para optimal
-  # subprocess.call([PLANNER, DOMAIN, PROBLEM, '-o', OUTPUT, '-Q'], stdout=subprocess.DEVNULL) # para madagascar -> Bom no AGILE
+  # subprocess.call([PLANNER, '--search-time-limit', '800' , '--plan-file', OUTPUT, '--alias', 'seq-sat-maidu', DOMAIN, PROBLEM], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) # para fastdownard  com lama 2011 ou stone soup
+  # subprocess.call([PLANNER, '--plan-file', OUTPUT, '--search-time-limit', '800','--alias', 'seq-opt-fdss-2023', DOMAIN, PROBLEM], stdout=subprocess.DEVNULL) # Bom para optimal
+  subprocess.call([PLANNER, DOMAIN, PROBLEM, '-o', OUTPUT, '-Q', '-B', '0.3','-P', '0'], stdout=subprocess.DEVNULL) # Não foi feito testes ainda, poderia superar o de baixo??
+  # subprocess.call([PLANNER, DOMAIN, PROBLEM, '-o', OUTPUT, '-Q'], stdout=subprocess.DEVNULL) # para madagascar -> Bom no AGILE e Melhor no SAT até o momento
 
 # read plan output
 def readPlan():
@@ -225,32 +228,37 @@ def readPlan():
   # print(coordinates[:-1]+'\n')
 
   # read fastdownward plan com seq-sat-lama-2011 ou stone soup (fdss-2)
-  with open(OUTPUT+'.1','r') as output:
-    for line in output:
-      if 'cost' in line:
-        pass
-      else:
-        plan = line[15:-2]
-        xy = plan.split(' ')
-        x = xy[0].strip('x')
-        y = xy[1].strip('y')
-        coordinates += f'({x}, {y});'
-  print(coordinates[:-1]+'\n')
-
-  # read madagascar plan
-  # with open(OUTPUT,'r') as output:
+  # for i in range(1,100,1):
+  #   if os.path.exists(f'{OUTPUT}.{i}'):
+  #     plan_file = f'{OUTPUT}.{i}'
+  #   else:
+  #     plan_file = f'{OUTPUT}.{i-1}'
+  #     break
+  # with open(plan_file,'r') as output:
   #   for line in output:
   #     if 'cost' in line:
   #       pass
   #     else:
-  #       startX = line.rfind('x')
-  #       # startY = line.rfind('y')
-  #       plan = line[startX:-2]
+  #       plan = line[15:-2]
   #       xy = plan.split(' ')
   #       x = xy[0].strip('x')
   #       y = xy[1].strip('y')
   #       coordinates += f'({x}, {y});'
   # print(coordinates[:-1]+'\n')
+
+  # read madagascar plan
+  with open(OUTPUT,'r') as output:
+    for line in output:
+      if 'cost' in line:
+        pass
+      else:
+        startX = line.rfind('x')
+        plan = line[startX:-2]
+        xy = plan.split(' ')
+        x = xy[0].strip('x')
+        y = xy[1].strip('y')
+        coordinates += f'({x}, {y});'
+  print(coordinates[:-1]+'\n')
 
 if __name__ == "__main__":
   i_parameters = readInput()
